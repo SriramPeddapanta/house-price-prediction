@@ -1,0 +1,29 @@
+name: Local Run with Rye
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rye
+        run: |
+          curl -sSf https://rye-up.com/get | bash
+          echo "$HOME/.rye/shims" >> $GITHUB_PATH
+
+      - name: Sync dependencies with Rye
+        run: |
+          rye sync
+
+      - name: Run training script with Rye
+        run: |
+          rye run train

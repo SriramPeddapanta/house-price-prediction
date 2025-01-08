@@ -1,0 +1,41 @@
+name: Azure ML CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install azureml-core azureml-dataset-runtime
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run training script in Azure ML
+        env:
+          WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
+          RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+          SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+        run: |
+          python src/train.py \
+            --data data/housing.data \
+            --output_dir outputs \
+            --workspace_name $WORKSPACE_NAME \
+            --resource_group $RESOURCE_GROUP \
+            --subscription_id $SUBSCRIPTION_ID
