@@ -1,7 +1,10 @@
-name: Azure ML CI
+name: Azure ML CI with Rye
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -12,30 +15,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.8"
-
-      - name: Install dependencies
+      - name: Set up Rye
         run: |
-          pip install -r requirements.txt
-          pip install azureml-core azureml-dataset-runtime
+          curl -sSf https://rye-up.com/get | bash
+          echo "$HOME/.rye/shims" >> $GITHUB_PATH
+
+      - name: Sync dependencies with Rye
+        run: |
+          rye sync
 
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Run training script in Azure ML
+      - name: Run training script with Rye
         env:
           WORKSPACE_NAME: ${{ secrets.WORKSPACE_NAME }}
           RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
           SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
         run: |
-          python src/train.py \
-            --data data/housing.data \
-            --output_dir outputs \
-            --workspace_name $WORKSPACE_NAME \
-            --resource_group $RESOURCE_GROUP \
-            --subscription_id $SUBSCRIPTION_ID
+          rye run azureMlTrain

@@ -25,6 +25,7 @@ dev-dependencies = []
 
 [tool.rye.scripts]
 train = { cmd = "python src/house_price_prediction/train.py", env-file = ".env" }
+azureMlTrain = { cmd = "python src/house_price_prediction/azure-ml-run.py", env-file = ".env" }
 
 [tool.hatch.metadata]
 allow-direct-references = true
